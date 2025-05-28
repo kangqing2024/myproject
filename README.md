@@ -13,11 +13,11 @@ docker pull nginx:stable-alpine
 1. Clone the repository
 
 ```
-git clone https://github.com/jtlicardo/bpmn-assistant.git
+git clone https://github.com/kangqing2024/myproject.git
 ```
 
 ```
-cd bpmn-assistant
+cd myproject
 ```
 
 2. Set up your environment variables
