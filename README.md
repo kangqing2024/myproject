@@ -1,5 +1,6 @@
 ![Logo](images/bpmn_assistant_logo.png)
-
+参考原链接：https://github.com/jtlicardo/bpmn-assistant
+在原项目基础上，加了用户信息，历史对话记录保存
 BPMN Assistant is an application that uses Large Language Models (LLMs) to assist with creating, editing, and
 interpreting Business Process Model and Notation (BPMN) diagrams.
 
