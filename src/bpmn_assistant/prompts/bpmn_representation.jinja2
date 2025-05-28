@@ -1,0 +1,257 @@
+
+BPMN JSON 表示形式使用一系列元素来描述流程。每个元素都根据其在 “process” 数组中的位置按顺序执行，除非网关 （独占或并行） 指定分支路径。
+BPMN 格式化文本（Formatted text）是JSON表式的文本描述，方便用户立即。
+- "process" 数组中的元素按顺序执行。
+
+
+# Representation of various BPMN elements
+# 各种BPMN元素的表示
+
+## Tasks
+
+Specify the task type in the 'type' field. Only "task", "userTask" and "serviceTask" options are supported.
+Always try to specify the specific task type:
+- Use 'userTask' for any human interaction (reviewing, deciding, entering data)
+- Use 'serviceTask' for automated system actions (calculations, emails, database operations)
+- Use 'task' only if the action cannot be clearly classified as user or system task
+Each task must be atomic - representing a single unit of work. Break down complex activities into multiple separate tasks.
+Labels must be clear and concise (ideally 2-4 words).
+在“类型”字段中指定任务类型。仅支持仅“任务”，“ USERTASK”和“ SERVICETASK”选项。
+始终尝试指定特定的任务类型：
+使用“ usertask”进行任何人类互动（审查，决定，输入数据）
+使用“ ServicEtask”进行自动化系统操作（计算，电子邮件，数据库操作）
+仅当操作无法清楚地分类为用户或系统任务时，才使用“任务”
+每个任务都必须是原子，代表单个工作单位。将复杂活动分解为多个单独的任务。
+标签必须清晰简洁（理想情况下是2-4个单词）。
+
+```json
+{
+    "type": String = "task" | "userTask" | "serviceTask"
+    "id": String,
+    "label": String, // short task description
+}
+```
+
+```formatted text
+Task|userTask|serviceTask : label // short task description
+```
+
+
+## Events
+
+Specify the event type in the 'type' field. Only "startEvent" and "endEvent" options are supported.
+在 'type' 字段中指定事件类型。仅支持 “startEvent” 和 “endEvent” 选项。
+
+```json
+{
+    "type": String = "startEvent" | "endEvent",
+    "id": String,
+    "label": String, // OPTIONAL: short event description
+}
+```
+
+```formatted text
+startEvent | endEvent : label // OPTIONAL: short event description
+```
+
+## Gateways
+
+Gateways determine process flow based on conditions or parallel tasks.
+网关基于条件或并行任务确定流程。
+
+### Exclusive gateway
+
+Each branch must include a condition and an array of elements that are executed if the condition is met.
+If a branch has an empty "path", it leads to the first element after the exclusive gateway.
+If the branch does not lead to the next element in the process (for example, it goes back to a previous element), specify the next element id.
+If the branch leads to the next element in the process, do not specify the next element id.
+If the process needs to end under a specific condition, you must explicitly include an end event in that branch's "path". If no end event is provided, the process will automatically continue to the next task in the sequence.
+If the process description does not explicitly mention the 'else' branch or specify the outcome for an unmet condition, assume it leads to an end event.
+每个分支必须包括一个条件和一个元素，如果满足条件。
+如果分支有一个空的“路径”，则会导致独家网关之后的第一个元素。
+如果分支没有导致该过程中的下一个元素（例如，它返回到上一个元素），请指定下一个元素ID。
+如果分支导致过程中的下一个元素，请勿指定下一个元素ID。
+如果该过程需要在特定条件下结束，则必须在该分支的“路径”中明确包含最终事件。如果未提供最终事件，则该过程将自动继续执行串行中的下一个任务。
+如果过程说明没有明确提及“ else”分支或指定未满足条件的结果，请假设它导致最终事件。
+
+```json
+{
+    "type": String = "exclusiveGateway",
+    "id": String,
+    "label": String, // label for the gateway (e.g. "Professor agrees?")
+    "has_join": Boolean, // whether the gateway contains a join element that merges the branches
+    "branches": [
+        {
+            "condition": String, // condition for the branch
+            "path": [], // array of elements that are executed if the condition is met (can be empty)
+            "next": String, // OPTIONAL: ID of the next element if not following default sequence. Omit or set to null if following default sequence.
+        },
+        {
+            "condition": String,
+            "path": [],
+            "next": String, // OPTIONAL: as above
+        },
+        // ... more branches
+    ],
+}
+```
+
+```formatted text
+exclusiveGateway : label  // label for the gateway (e.g. "Professor agrees?")
+branch1 : 
+    condition1:condition // condition for the branch
+    path:[path1, path2,...] // array of elements that are executed if the condition is met (can be empty)
+    next:next_element_id // OPTIONAL: ID of the next element if not following default sequence. Omit or set to null if following default sequence.
+branch2 : 
+    condition2:condition
+    path:[path1, path2,...]
+    next:next_element_id    // OPTIONAL: as above
+//... more branches
+```
+
+### Parallel gateway
+
+Specify "branches" as an array of arrays, where each sub-array lists elements executed in parallel.
+A converging element is automatically generated to synchronize parallel branches. Therefore, there's no need to explicitly specify it.
+将“分支”指定为数组数组，其中每个子阵列列出了并行执行的元素。
+收敛组件将自动生成以同步并行分支。因此，无需明确指定它。
+
+```json
+{
+    "type": String = "parallelGateway",
+    "id": String,
+    "branches": [
+        [], // array of elements that are executed in parallel with the next array
+        [], // array of elements that are executed in parallel with the previous array
+        // ... more arrays
+    ],
+}
+```
+```formatted text
+parallelGateway
+branch1 : 
+    [path1, path2,...] // array of elements that are executed in parallel with the next array
+branch2 : 
+    [path1, path2,...] // array of elements that are executed in parallel with the previous array
+// ... more arrays
+```
+
+## Data objects
+
+Data objects represent data that is passed between tasks.
+数据对象表示在任务之间传递的数据。
+
+```json
+{
+    "type": String = "dataObject",
+    "id": String,
+    "name": String, // name of the data object
+    "is_collection": Boolean, // whether the data object is a collection (e.g. a list of items)
+    "item_type": String, // OPTIONAL: type of items in the collection (e.g. "string", "number")
+}
+```
+
+```formatted text
+dataObject : name // name of the data object
+```
+
+## Data stores
+
+```json
+{
+    "type": String = "dataStore",
+    "id": String,
+    "name": String, // name of the data store
+    "is_collection": Boolean, // whether the data store is a collection (e.g. a list of items)
+    "item_type": String, // OPTIONAL: type of items in the collection (e.g. "string", "number")
+}
+```
+
+## Subprocesses
+
+Subprocesses represent nested processes.
+子流程表示嵌套流程。
+
+```json
+{
+    "type": String = "subProcess",
+    "id": String,
+    "label": String, // label for the subprocess (e.g. "Review proposal")
+    "process": [], // array of elements in the subprocess
+}
+```
+
+```formatted text
+subProcess : label // label for the subprocess (e.g. "Review proposal")
+```
+
+## Sequence flows
+
+Sequence flows represent the flow of control between elements in the process.
+序列流表示流程控制在流程中的元素之间的流动。
+
+```json
+{
+    "type": String = "sequenceFlow",
+    "id": String,
+    "source_ref": String, // ID of the source element
+    "target_ref": String, // ID of the target element
+    "condition_expression": String, // OPTIONAL: expression that determines whether the flow is taken (e.g. "is_accepted == true")
+}
+```
+
+```formatted text
+sequenceFlow : source_element_id -> target_element_id // OPTIONAL: expression that determines whether the flow is taken (e.g. "is_accepted == true")
+``` 
+
+## End event
+
+End events indicate the end of a process.
+结束事件表示流程的结束。
+
+```json
+{
+    "type": String = "endEvent",
+    "id": String,
+    "label": String, // OPTIONAL: short event description
+}
+```
+
+```formatted text
+endEvent : label // OPTIONAL: short event description
+``` 
+
+## Start event
+
+Start events indicate the beginning of a process.
+开始事件表示流程的开始。
+
+```json
+{
+    "type": String = "startEvent",
+    "id": String,
+    "label": String, // OPTIONAL: short event description
+}
+```
+
+```formatted text
+startEvent : label // OPTIONAL: short event description
+``` 
+
+## Text annotations
+
+Text annotations provide additional information about the process.
+文本注释提供有关流程的其他信息。
+
+```json
+{
+    "type": String = "textAnnotation",
+    "id": String,
+    "text": String, // text of the annotation
+}
+```
+
+```formatted text
+textAnnotation : text // text of the annotation
+``` 
+

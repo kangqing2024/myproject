@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bpmn_assistant"
+version = "0.2.0"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "anthropic>=0.40.0",
+    "fastapi>=0.115.6",
+    "jinja2>=3.1.5",
+    "litellm>=1.61.8",
+    "pydantic>=2.10.3",
+    "python-dotenv>=1.0.1",
+    "uvicorn>=0.33.0",    
+    "sqlalchemy>=2.0.0",  # 新增
+    "psycopg2-binary>=2.9.0",  # 新增
+    "passlib[bcrypt]>=1.7.4",  # 新增
+    "redis>=4.5.5",  # 添加 redis-py 依赖
+    # "aliyun-python-sdk-core-v3",
+    # "aliyun-python-sdk-dysmsapi",
+    "python-multipart"  # 新增 python-multipart 依赖
+]
+
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["bpmn_assistant"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+]

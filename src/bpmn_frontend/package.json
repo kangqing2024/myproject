@@ -1,0 +1,25 @@
+{
+  "name": "bpmn_frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 80",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "bpmn-js": "^17.9.1",
+    "vue": "^3.4.29",
+    "vue-router": "^4.3.3",
+    "vuetify": "^3.6.12",
+    "highlight.js": "^11.8.0", 
+    "clipboard": "^2.0.11",
+    "axios": "^1.6.2" 
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vite": "^5.4.14"
+  }
+}
